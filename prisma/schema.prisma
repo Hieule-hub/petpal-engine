@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider      = "prisma-client-js"
+    binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+// https://www.robinwieruch.de/next-prisma-sqlite/
+
+model VideoSource {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    channel   Int      @unique
+    name      String?
+    url       String
+    username  String?
+    password  String?
+}
+
+model Rule {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    name      String
+    type      Int
+    events    Event[]
+    actions   Action[]
+    json      String
+}
+
+model Event {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    rule      Rule     @relation(fields: [ruleId], references: [id])
+    ruleId    Int
+    channel   Int
+    // lineColor  String?
+    // points     String
+    // normals    String
+    // classNames String
+    // classIds   String
+    type      Int
+    // threshold  Int?
+    json      String
+}
+
+model Action {
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    rule      Rule     @relation(fields: [ruleId], references: [id])
+    ruleId    Int
+    // ...
+}
+
+// https://lucia-auth.com/database/prisma
+
+model User {
+    id           String    @id
+    sessions     Session[]
+    username     String    @unique
+    passwordHash String
+}
+
+model Session {
+    id        String   @id
+    userId    String
+    expiresAt DateTime
+
+    user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
